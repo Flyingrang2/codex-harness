@@ -13,12 +13,15 @@ Codex 같은 코딩 에이전트에게 데이터·코드 과제를 맡길 때 �
 | `.agents/skills/finish` | 제출 전: 필수 파일·여분 파일·판단 기록(판단/근거/검증/한계)·남은 위험 점검 |
 
 ## 쓰는 법
+과제 폴더 터미널에서 두 줄:
 ```bash
-git clone --depth 1 https://github.com/flyingrang2/codex-harness /tmp/kit
-cd <작업 폴더>
-bash /tmp/kit/install.sh      # 이미 AGENTS.md가 있으면 멈춤 → 읽고 나서 --append
-codex                         # AGENTS.md는 codex를 켤 때 읽는다 → 복사한 다음에 켠다
+git clone https://github.com/flyingrang2/codex-harness /tmp/kit
+bash /tmp/kit/install.sh
+codex
 ```
+또는 Codex에게 한 문장: 「flyingrang2/codex-harness 클론하고, 그 안의 install.sh 실행해. 끝나면 클론한 폴더는 지워.」 → 끝나면 Codex를 껐다 다시 켠다(AGENTS.md는 켤 때만 읽는다).
+
+`install.sh`는 과제 README가 있는 폴더를 찾아서 `AGENTS.md`와 `.agents/skills`만 복사한다. 이미 있는 파일은 건드리지 않는다.
 
 ## 원칙
 - 판단은 사람이, 실행과 점검은 에이전트가. 에이전트는 기준이 애매하면 멈추고 묻는다.
