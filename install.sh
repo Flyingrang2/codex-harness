@@ -42,13 +42,21 @@ else
   cp "$KIT/AGENTS.md" "$DEST/AGENTS.md" && echo "+ AGENTS.md"
 fi
 
-mkdir -p "$DEST/.agents/skills"
+# 스킬은 .agents/skills 에. Codex 보안 상자 안에서 실행하면 .agents 가 읽기 전용이라 못 만든다
+# → 그때는 harness-skills/ 에 넣고, AGENTS.md 끝에 「거기서 직접 읽어」를 덧붙인다.
+SK="$DEST/.agents/skills"
+if ! { mkdir -p "$SK" 2>/dev/null && [ -w "$SK" ]; }; then
+  SK="$DEST/harness-skills"
+  mkdir -p "$SK"
+  echo "!! .agents 폴더에 쓸 수 없음(Codex 보안 상자 안에서 실행한 듯) → 스킬을 harness-skills/ 에 넣음"
+  printf '\n스킬 파일은 harness-skills/<이름>/SKILL.md 에 있어. 스킬 목록에 없으니 쓸 때마다 그 파일을 직접 읽고 따라.\n' >> "$DEST/AGENTS.md"
+fi
 for s in "$KIT"/.agents/skills/*/; do
   n="$(basename "$s")"
-  if [ -e "$DEST/.agents/skills/$n" ]; then
+  if [ -e "$SK/$n" ]; then
     echo "!! 스킬 $n 이미 있음 — 건너뜀"
   else
-    cp -r "$s" "$DEST/.agents/skills/$n" && echo "+ 스킬 $n"
+    cp -r "$s" "$SK/$n" && echo "+ 스킬 $n"
   fi
 done
 
