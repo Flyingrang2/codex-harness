@@ -7,7 +7,10 @@ set -e
 KIT="$(cd "$(dirname "$0")" && pwd)"
 APPEND=0
 [ "$1" = "--append" ] && { APPEND=1; shift; }
-DEST="${1:-$PWD}"
+DEST="$(cd "${1:-$PWD}" && pwd)"
+
+# 하네스 폴더 안에서 실행했으면 그 바깥 폴더를 작업 폴더 후보로 본다.
+[ "$DEST" = "$KIT" ] && DEST="$(dirname "$KIT")"
 
 # 작업 폴더 = 과제 README가 있는 곳. 여기에 없으면 git 맨 위 폴더를 보고, 거기에도 없으면 멈춘다.
 if ! ls "$DEST" | grep -qi '^readme'; then
@@ -48,5 +51,9 @@ for s in "$KIT"/.agents/skills/*/; do
     cp -r "$s" "$DEST/.agents/skills/$n" && echo "+ 스킬 $n"
   fi
 done
+
+case "$KIT/" in
+  "$DEST"/*) echo "!! 하네스 폴더가 작업 폴더 안에 있음 — 설치는 끝났으니 커밋이 꼬이지 않게 지우기:  rm -rf \"$KIT\"" ;;
+esac
 
 echo "끝. 이제 codex를 켜고(업데이트 창은 Skip) /status 에서 AGENTS.md가 잡혔는지 확인."
