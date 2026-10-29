@@ -9,9 +9,21 @@ APPEND=0
 [ "$1" = "--append" ] && { APPEND=1; shift; }
 DEST="${1:-$PWD}"
 
+# 작업 폴더 = 과제 README가 있는 곳. 여기에 없으면 git 맨 위 폴더를 보고, 거기에도 없으면 멈춘다.
+if ! ls "$DEST" | grep -qi '^readme'; then
+  TOP="$(git -C "$DEST" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [ -n "$TOP" ] && ls "$TOP" | grep -qi '^readme'; then
+    echo "여기엔 README가 없어서 git 맨 위 폴더에 설치: $TOP"
+    DEST="$TOP"
+  else
+    echo "!! $DEST 에 README가 없음 — 작업 폴더가 아닌 것 같아 멈춤."
+    echo "   파일 탐색기 맨 위 폴더(README가 있는 곳)로 이동한 뒤 다시:  cd <그 폴더>  →  bash $KIT/install.sh"
+    exit 1
+  fi
+fi
+
 echo "설치 위치: $DEST"
 ls "$DEST" | head -20
-ls "$DEST" | grep -qi '^readme' || echo "!! 여기에 README가 안 보임 — 작업 폴더가 맞는지 확인할 것"
 
 if [ -e "$DEST/AGENTS.md" ]; then
   if [ "$APPEND" = 1 ]; then
