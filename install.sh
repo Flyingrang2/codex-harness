@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 작업 폴더에 작업 규칙(AGENTS.md)과 스킬(.agents/skills)을 복사한다. 이미 있는 파일은 덮어쓰지 않는다.
+# 작업 폴더에 작업 규칙(AGENTS.md)과 스킬(harness-skills/)을 복사한다. 이미 있는 파일은 덮어쓰지 않는다.
 # 사용: 작업 폴더에서  bash /tmp/kit/install.sh
 #       작업 폴더에 AGENTS.md가 이미 있으면 아무것도 안 하고 멈춘다 → 그 파일을 먼저 읽고,
 #       이어 붙여도 되겠다고 판단했을 때만  bash /tmp/kit/install.sh --append
@@ -42,16 +42,11 @@ else
   cp "$KIT/AGENTS.md" "$DEST/AGENTS.md" && echo "+ AGENTS.md"
 fi
 
-# 스킬은 .agents/skills 에. Codex 보안 상자 안에서 실행하면 .agents 가 읽기 전용이라 못 만든다
-# → 그때는 harness-skills/ 에 넣고, AGENTS.md 끝에 「거기서 직접 읽어」를 덧붙인다.
-SK="$DEST/.agents/skills"
-if ! { mkdir -p "$SK" 2>/dev/null && [ -w "$SK" ]; }; then
-  SK="$DEST/harness-skills"
-  mkdir -p "$SK"
-  echo "!! .agents 폴더에 쓸 수 없음(Codex 보안 상자 안에서 실행한 듯) → 스킬을 harness-skills/ 에 넣음"
-  printf '\n스킬 파일은 harness-skills/<이름>/SKILL.md 에 있어. 스킬 목록에 없으니 쓸 때마다 그 파일을 직접 읽고 따라.\n' >> "$DEST/AGENTS.md"
-fi
-for s in "$KIT"/.agents/skills/*/; do
+# 스킬은 harness-skills/ 에 고정. AGENTS.md가 이 경로를 직접 가리킨다.
+# (.agents 는 Codex 보안 상자 안에서 읽기 전용이라 쓰지 않는다)
+SK="$DEST/harness-skills"
+mkdir -p "$SK"
+for s in "$KIT"/harness-skills/*/; do
   n="$(basename "$s")"
   if [ -e "$SK/$n" ]; then
     echo "!! 스킬 $n 이미 있음 — 건너뜀"
@@ -59,6 +54,14 @@ for s in "$KIT"/.agents/skills/*/; do
     cp -r "$s" "$SK/$n" && echo "+ 스킬 $n"
   fi
 done
+
+echo
+echo "설치 결과:"
+for f in AGENTS.md "$KIT"/harness-skills/*/SKILL.md; do
+  r="${f#$KIT/}"
+  [ -f "$DEST/$r" ] && echo "  ✅ $r" || echo "  ❌ $r 없음"
+done
+grep -q 'harness-skills/' "$DEST/AGENTS.md" && echo "  ✅ AGENTS.md가 harness-skills/ 를 가리킴" || echo "  ❌ AGENTS.md에 harness-skills/ 안내가 없음"
 
 case "$KIT/" in
   "$DEST"/*) echo "!! 하네스 폴더가 작업 폴더 안에 있음 — 설치는 끝났으니 커밋이 꼬이지 않게 지우기:  rm -rf \"$KIT\"" ;;
